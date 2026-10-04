@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="az">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Relay Control</title>
+  <style>
+    :root {
+      --bg: #12141a;
+      --panel: #1b1e27;
+      --panel-2: #232733;
+      --line: #2c3140;
+      --text: #e8eaf0;
+      --muted: #8b92a5;
+      --on: #ffb340;
+      --on-soft: rgba(255, 179, 64, .14);
+      --accent: #6ea8ff;
+      --danger: #ff6b6b;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button,
+    input {
+      font: inherit;
+      color: inherit;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    /* Login */
+    #login {
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 380px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 32px 28px;
+    }
+
+    .login-box h1 {
+      margin: 0 0 4px;
+      font-size: 1.6rem;
+    }
+
+    .login-box .sub {
+      margin: 0 0 24px;
+      color: var(--muted);
+    }
+
+    label {
+      display: block;
+      font-size: .9rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    input {
+      width: 100%;
+      padding: 13px 14px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: border-color .2s;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    .eye {
+      position: absolute;
+      right: 6px;
+      bottom: 6px;
+      background: none;
+      border: 0;
+      padding: 8px 10px;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: .85rem;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #0c1220;
+      font-weight: 600;
+      cursor: pointer;
+      transition: filter .2s, transform .1s;
+    }
+
+    .btn:hover {
+      filter: brightness(1.08);
+    }
+
+    .btn:active {
+      transform: scale(.98);
+    }
+
+    .btn:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    .error {
+      min-height: 1.4em;
+      margin: 0 0 12px;
+      color: var(--danger);
+      font-size: .9rem;
+    }
+
+    /* Dashboard */
+    #app {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px 16px 48px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.3rem;
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: .9rem;
+      margin-top: 2px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .dot.live {
+      background: #4ade80;
+      box-shadow: 0 0 8px #4ade8099;
+    }
+
+    .ghost {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 9px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: var(--muted);
+      transition: color .2s, border-color .2s;
+    }
+
+    .ghost:hover {
+      color: var(--text);
+      border-color: var(--muted);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+
+    .stat .label {
+      color: var(--muted);
+      font-size: .85rem;
+      margin: 0;
+    }
+
+    .stat .value {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .stat .value.small {
+      font-size: 1.05rem;
+      padding-top: 4px;
+    }
+
+    .bar {
+      height: 6px;
+      background: var(--panel-2);
+      border-radius: 99px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--on);
+      transition: width .4s;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 8px 0 14px;
+      flex-wrap: wrap;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .allon,
+    .alloff {
+      background: transparent;
+      padding: 9px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .allon {
+      color: var(--on);
+      border: 1px solid #ffb34066;
+    }
+
+    .allon:hover {
+      background: var(--on-soft);
+    }
+
+    .alloff {
+      color: var(--danger);
+      border: 1px solid #ff6b6b66;
+    }
+
+    .alloff:hover {
+      background: #ff6b6b1f;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: border-color .25s, background .25s, box-shadow .25s;
+    }
+
+    .card:hover {
+      border-color: #3a4054;
+    }
+
+    .card.on {
+      background: linear-gradient(180deg, var(--on-soft), var(--panel) 70%);
+      border-color: #ffb34088;
+      box-shadow: 0 0 24px rgba(255, 179, 64, .12);
+    }
+
+    .card.loading {
+      opacity: .6;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .head>div {
+      min-width: 0;
+    }
+
+    .num {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: var(--panel-2);
+      color: var(--muted);
+      font-weight: 600;
+      flex-shrink: 0;
+      transition: background .25s, color .25s;
+    }
+
+    .card.on .num {
+      background: var(--on);
+      color: #2a1a00;
+    }
+
+    .name {
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .state {
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .card.on .state {
+      color: var(--on);
+    }
+
+    .switch {
+      width: 52px;
+      height: 30px;
+      border-radius: 999px;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      position: relative;
+      flex-shrink: 0;
+      transition: background .25s;
+    }
+
+    .switch::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #aab0c2;
+      transition: transform .25s, background .25s;
+    }
+
+    .card.on .switch {
+      background: var(--on);
+      border-color: var(--on);
+    }
+
+    .card.on .switch::after {
+      transform: translateX(22px);
+      background: #fff;
+    }
+
+    .info {
+      display: grid;
+      gap: 6px;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      font-size: .85rem;
+      color: var(--muted);
+    }
+
+    .info>div {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .info b {
+      color: var(--text);
+      font-weight: 500;
+      text-align: right;
+    }
+
+    .rename {
+      background: none;
+      border: 0;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 2px 6px;
+      margin-left: auto;
+      border-radius: 6px;
+      font-size: .8rem;
+    }
+
+    .rename:hover {
+      color: var(--text);
+      background: var(--panel-2);
+    }
+
+    .log {
+      margin-top: 28px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+
+    .log .section-head {
+      margin-top: 0;
+    }
+
+    .log ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .log li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: .92rem;
+    }
+
+    .log li:last-child {
+      border-bottom: 0;
+    }
+
+    .log .pip {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .log .pip.on {
+      background: var(--on);
+    }
+
+    .log .time {
+      color: var(--muted);
+      font-size: .85rem;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .log .empty {
+      color: var(--muted);
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: .9rem;
+    }
+
+    @media (max-width: 560px) {
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .stats .stat:last-child {
+        grid-column: 1 / -1;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Login -->
+  <main id="login" hidden>
+    <div class="login-box">
+      <h1>Relay Control</h1>
+      <p class="sub">Daxil olmaq üçün məlumatlarınızı yazın</p>
+      <div class="field">
+        <label for="email">E-poçt</label>
+        <input id="email" type="email" autocomplete="username" placeholder="ad@mail.com" />
+      </div>
+      <div class="field">
+        <label for="password">Şifrə</label>
+        <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" />
+        <button class="eye" id="eye" type="button">Göstər</button>
+      </div>
+      <p class="error" id="error" role="alert"></p>
+      <button class="btn" id="loginBtn">Daxil ol</button>
+    </div>
+  </main>
+
+  <!-- Dashboard -->
+  <div id="app" hidden>
+    <header>
+      <div>
+        <h1>Relay Control</h1>
+        <div class="meta"><span class="dot" id="dot"></span><span id="conn">Qoşulur...</span></div>
+      </div>
+      <button class="ghost" id="logoutBtn">Çıxış</button>
+    </header>
+
+    <section class="stats">
+      <div class="stat">
+        <p class="label">Aktiv rölelər</p>
+        <div class="value" id="count">0 / 4</div>
+        <div class="bar"><i id="barFill"></i></div>
+      </div>
+      <div class="stat">
+        <p class="label">Bağlantı</p>
+        <div class="value small" id="connStat">Qoşulur...</div>
+      </div>
+      <div class="stat">
+        <p class="label">Son dəyişiklik</p>
+        <div class="value small" id="lastChange">Hələ yoxdur</div>
+      </div>
+    </section>
+
+    <div class="section-head">
+      <h2>Rölelər</h2>
+      <div class="actions">
+        <button class="allon" id="allOnBtn">Hamısını yandır</button>
+        <button class="alloff" id="allOffBtn">Hamısını söndür</button>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <section class="log">
+      <div class="section-head">
+        <h2>Son fəaliyyət</h2>
+        <button class="ghost" id="clearLog">Təmizlə</button>
+      </div>
+      <ul id="logList"></ul>
+    </section>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBR-mYG5I9qQGqwWUvaieyvpCx9X9Cq7l8",
+      authDomain: "esp32relaycontrol-c5b11.firebaseapp.com",
+      databaseURL: "https://esp32relaycontrol-c5b11-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "esp32relaycontrol-c5b11",
+      storageBucket: "esp32relaycontrol-c5b11.firebasestorage.app",
+      messagingSenderId: "325010950383",
+      appId: "1:325010950383:web:0658a26732b0177e3cb31a"
+    };
+
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const $ = id => document.getElementById(id);
+
+    const RELAYS = [1, 2, 3, 4].map(n => ({id: n, path: "relay" + n}));
+    const states = {}, since = {}, ready = {};
+    let listeners = [], toastTimer, tick;
+
+    function load(key, fallback) {
+      try {return JSON.parse(localStorage.getItem(key)) || fallback;} catch (e) {return fallback;}
+    }
+    function save(key, val) {
+      try {localStorage.setItem(key, JSON.stringify(val));} catch (e) { }
+    }
+    let names = load("relayNames", {});
+    let changed = load("relayChanged", {});
+    let log = load("relayLog", []);
+
+    const nameOf = r => names[r.id] || "Röle " + r.id;
+    const hhmm = t => new Date(t).toLocaleTimeString("az", {hour: "2-digit", minute: "2-digit"});
+    function ago(t) {
+      const m = Math.floor((Date.now() - t) / 60000);
+      if (m < 1) return "indicə";
+      if (m < 60) return m + " dəq əvvəl";
+      const h = Math.floor(m / 60);
+      return h < 24 ? h + " saat əvvəl" : Math.floor(h / 24) + " gün əvvəl";
+    }
+    function dur(t) {
+      const m = Math.floor((Date.now() - t) / 60000);
+      if (m < 1) return "1 dəqdən az";
+      return m < 60 ? m + " dəq" : Math.floor(m / 60) + " saat " + (m % 60) + " dəq";
+    }
+    function toast(msg) {
+      const t = $("toast");
+      t.textContent = msg; t.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => (t.hidden = true), 2500);
+    }
+
+    /* ---------- Login ---------- */
+    const errorMsg = {
+      "auth/invalid-credential": "E-poçt və ya şifrə səhvdir.",
+      "auth/invalid-email": "E-poçt formatı düzgün deyil.",
+      "auth/user-not-found": "Bu e-poçtla istifadəçi tapılmadı.",
+      "auth/wrong-password": "E-poçt və ya şifrə səhvdir.",
+      "auth/too-many-requests": "Çox cəhd edildi. Bir az sonra yenidən yoxlayın.",
+      "auth/network-request-failed": "İnternet bağlantısını yoxlayın."
+    };
+
+    async function login() {
+      const email = $("email").value.trim();
+      const password = $("password").value;
+      $("error").textContent = "";
+      if (!email || !password) {$("error").textContent = "E-poçt və şifrəni yazın."; return;}
+      const btn = $("loginBtn");
+      btn.disabled = true; btn.textContent = "Daxil olunur...";
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+      } catch (e) {
+        $("error").textContent = errorMsg[e.code] || "Giriş alınmadı. Yenidən cəhd edin.";
+      } finally {
+        btn.disabled = false; btn.textContent = "Daxil ol";
+      }
+    }
+
+    $("loginBtn").onclick = login;
+    $("password").addEventListener("keydown", e => {if (e.key === "Enter") login();});
+    $("email").addEventListener("keydown", e => {if (e.key === "Enter") $("password").focus();});
+    $("eye").onclick = () => {
+      const show = $("password").type === "password";
+      $("password").type = show ? "text" : "password";
+      $("eye").textContent = show ? "Gizlət" : "Göstər";
+    };
+    $("logoutBtn").onclick = () => auth.signOut();
+
+    /* ---------- Dashboard ---------- */
+    function buildGrid() {
+      $("grid").innerHTML = RELAYS.map(r => `
+      <div class="card loading" id="card${r.id}">
+        <div class="top" id="top${r.id}" role="button" tabindex="0">
+          <div class="head">
+            <span class="num">${r.id}</span>
+            <div><div class="name" id="name${r.id}"></div><div class="state" id="state${r.id}">Yüklənir...</div></div>
+          </div>
+          <span class="switch"></span>
+        </div>
+        <div class="info">
+          <div><span>Son dəyişiklik</span><b id="when${r.id}">-</b></div>
+          <div><span>Aktiv müddət</span><b id="run${r.id}">-</b></div>
+          <div><button class="rename" id="ren${r.id}">Adı dəyiş</button></div>
+        </div>
+      </div>`).join("");
+
+      RELAYS.forEach(r => {
+        const flip = () => db.ref("/" + r.path).set(!states[r.id]).catch(() => toast("Əməliyyat alınmadı"));
+        $("top" + r.id).onclick = flip;
+        $("top" + r.id).onkeydown = e => {if (e.key === "Enter" || e.key === " ") {e.preventDefault(); flip();} };
+        $("ren" + r.id).onclick = () => {
+          const v = prompt("Röle üçün yeni ad:", nameOf(r));
+          if (v === null) return;
+          names[r.id] = v.trim().slice(0, 24);
+          save("relayNames", names);
+          render(r);
+        };
+      });
+    }
+
+    function render(r) {
+      const on = !!states[r.id];
+      $("card" + r.id).classList.remove("loading");
+      $("card" + r.id).classList.toggle("on", on);
+      $("top" + r.id).setAttribute("aria-pressed", on);
+      $("name" + r.id).textContent = nameOf(r);
+      $("state" + r.id).textContent = on ? "Aktiv" : "Söndürülüb";
+      $("when" + r.id).textContent = changed[r.id] ? hhmm(changed[r.id]) + " (" + ago(changed[r.id]) + ")" : "-";
+      $("run" + r.id).textContent = on && since[r.id] ? dur(since[r.id]) : "-";
+      const active = RELAYS.filter(x => states[x.id]).length;
+      $("count").textContent = active + " / " + RELAYS.length;
+      $("barFill").style.width = (active / RELAYS.length * 100) + "%";
+    }
+
+    function renderLog() {
+      const last = Math.max(0, ...Object.values(changed));
+      $("lastChange").textContent = last ? hhmm(last) + " (" + ago(last) + ")" : "Hələ yoxdur";
+      $("logList").innerHTML = log.length
+        ? log.map(e => `<li><span class="pip ${e.on ? "on" : ""}"></span><span>${e.name} ${e.on ? "yandırıldı" : "söndürüldü"}</span><span class="time">${hhmm(e.t)}</span></li>`).join("")
+        : '<li class="empty">Hələ dəyişiklik yoxdur. Röleni yandırıb-söndürəndə burada görünəcək.</li>';
+    }
+
+    function onValue(r, on) {
+      const first = !ready[r.id];
+      const prev = states[r.id];
+      states[r.id] = on;
+      ready[r.id] = true;
+      if (on && (first || !prev)) since[r.id] = first && changed[r.id] ? changed[r.id] : Date.now();
+      if (!first && prev !== on) {
+        const now = Date.now();
+        changed[r.id] = now;
+        log = [{name: nameOf(r), on, t: now}, ...log].slice(0, 20);
+        save("relayChanged", changed);
+        save("relayLog", log);
+      }
+      render(r);
+      renderLog();
+    }
+
+    function start() {
+      buildGrid();
+      renderLog();
+      listeners = RELAYS.map(r => {
+        const ref = db.ref("/" + r.path);
+        ref.on("value", snap => onValue(r, !!snap.val()));
+        return ref;
+      });
+      db.ref(".info/connected").on("value", s => {
+        const ok = !!s.val();
+        $("dot").classList.toggle("live", ok);
+        $("conn").textContent = $("connStat").textContent = ok ? "Bağlıdır" : "Bağlantı yoxdur";
+      });
+      clearInterval(tick);
+      tick = setInterval(() => {RELAYS.forEach(r => ready[r.id] && render(r)); renderLog();}, 30000);
+    }
+
+    function stop() {
+      listeners.forEach(ref => ref.off());
+      db.ref(".info/connected").off();
+      clearInterval(tick);
+      listeners = [];
+      RELAYS.forEach(r => {delete ready[r.id]; delete states[r.id];});
+    }
+
+    function setAll(val) {
+      const updates = {};
+      RELAYS.forEach(r => (updates[r.path] = val));
+      db.ref().update(updates)
+        .then(() => toast(val ? "Hamısı yandırıldı" : "Hamısı söndürüldü"))
+        .catch(() => toast("Əməliyyat alınmadı"));
+    }
+    $("allOnBtn").onclick = () => setAll(true);
+    $("allOffBtn").onclick = () => setAll(false);
+    $("clearLog").onclick = () => {log = []; save("relayLog", log); renderLog();};
+
+    /* ---------- Session ---------- */
+    auth.onAuthStateChanged(user => {
+      $("login").hidden = !!user;
+      $("app").hidden = !user;
+      if (user) {
+        start();
+      } else {
+        stop();
+        $("password").value = "";
+      }
+    });
+  </script>
+</body>
+
+</html>
